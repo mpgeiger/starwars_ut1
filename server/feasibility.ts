@@ -1,4 +1,4 @@
-import { parseNumeric, distanceFactor } from './utils.js'
+import { parseNumeric, distanceFactor } from './utils'
 
 interface Planet {
   id: number
