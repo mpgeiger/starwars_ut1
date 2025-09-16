@@ -1,0 +1,119 @@
+You are Bolt.new. Create a full-stack TypeScript app called "StarCrew".
+
+## Tech choices
+- Frontend: React + Vite + TypeScript + Tailwind + shadcn/ui (Button, Card, Dialog, Tabs, Badge, Table)
+- State: Zustand
+- Backend: Node/Express in the same Bolt project
+- DB: Supabase (use env vars SUPABASE_URL, SUPABASE_ANON_KEY)
+- Auth: none (public demo)
+- Lint: ESLint + Prettier
+
+## Pages / Routes
+- "/" (Home): quick intro, CTA button "Build a Crew"
+- "/crew": Crew Builder workspace
+- "/crew/:id": View saved crew
+
+## UI: /crew
+- Left column: 
+  - "Target Planet" selector (typeahead over planets.name)
+  - "Mission constraints" card: max budget, min passenger capacity, cargo requirement (kg), max stops
+  - "Add Character" button → modal search (people: name, homeworld, species, films)
+  - "Add Starship" button → modal search (starships: name, model, cost_in_credits, hyperdrive_rating, MGLT, passengers, cargo_capacity)
+- Right column:
+  - "Crew Summary" card: totals (cost, passengers, cargo), warnings
+  - "Feasibility" card: 
+      * CanReach(Target Planet)? (yes/no + why)
+      * Estimated hops and refuels
+      * Bottlenecks (e.g., not enough passengers, cargo overweight, cost over budget)
+  - "Save Crew" button → persists to Supabase
+
+## Components
+- PlanetSelect (typeahead with debounced Supabase query)
+- PersonSearchDialog (filters: film, species, homeworld; paginated)
+- StarshipSearchDialog (filters: class, cost range, hyperdrive >=, passengers >=)
+- CrewList (list with remove buttons, badges for roles)
+- FeasibilityPanel (renders result from backend rules endpoint)
+- BudgetSlider, PassengersInput, CargoInput
+
+## State (Zustand)
+- targetPlanetId
+- constraints: { budget: number|null, minPassengers: number|null, cargoKg: number|null, maxStops: number|null }
+- crew: { people: Person[], ships: Starship[] }
+- derived totals (selector functions)
+
+## Server (Express)
+Create these routes:
+- GET /api/search/planets?q=...
+- GET /api/search/people?q=...&film_id=&species_id=&homeworld_id=&page=
+- GET /api/search/starships?q=...&class=&min_hyperdrive=&min_passengers=&max_cost=&page=
+- POST /api/feasibility (body: { targetPlanetId, constraints, peopleIds, starshipIds })
+  -> returns:
+     {
+       ok: boolean,
+       reasons: string[],
+       totals: { cost:number, passengers:number, cargo:number },
+       hops: number,
+       refuels: number,
+       suggestedRoute: { planetId:number, name:string }[]
+     }
+- POST /api/crews (save { name, targetPlanetId, constraints, peopleIds, starshipIds })
+- GET /api/crews/:id
+
+## Supabase (assume SWAPI tables)
+Tables exist: people, starships, planets, films, species, people_films, starships_films, people_species.
+Create app tables:
+- crews(id uuid pk, name text, target_planet_id int, constraints jsonb, created_at timestamptz default now())
+- crew_people(crew_id uuid fk, person_id int)
+- crew_starships(crew_id uuid fk, starship_id int)
+
+## Feasibility rules (implement in /api/feasibility)
+1) Totals:
+   - cost = sum(starships.cost_in_credits where numeric)
+   - passengers = sum(starships.passengers numeric)
+   - cargo = sum(starships.cargo_capacity numeric)
+2) Constraints (fail fast):
+   - if constraints.budget && cost > budget -> reason
+   - if constraints.minPassengers && passengers < minPassengers -> reason
+   - if constraints.cargoKg && cargo < cargoKg -> reason
+3) Reachability heuristic (simplified):
+   - For target planet, require at least one starship with hyperdrive_rating not null.
+   - Estimate hops = ceil( distanceFactor(targetPlanet.terrain, climate) / maxHyperdrive )
+     (Use a dummy distanceFactor mapping; see note below.)
+   - If constraints.maxStops && hops-1 > maxStops -> reason
+   - refuels = max(0, hops - floor(avgMGLT/50))
+   - ok = reasons.length === 0
+Return above payload.
+
+## Distance heuristic (dummy mapping)
+Implement `distanceFactor(terrain, climate)` with a simple switch:
+- desert|arid → 5
+- frozen|tundra → 6
+- swamp|jungle → 4
+- temperate|grasslands|forests → 3
+- oceanic|water → 4
+- otherwise → 5
+Use planet.terrain/climate strings to pick the highest matching factor.
+
+## Nice touches
+- Badge colors when a constraint is met/exceeded (good/neutral/warn)
+- Persist local state in URL (search params) so reloads keep context
+- Empty states with cheeky Star Wars copy
+
+## Env & Utilities
+- Create supabase client util with RLS-safe anon key
+- Catch and format numeric strings like "unknown" to null
+- Debounce all search inputs (300ms)
+
+## Scripts
+- "dev": concurrent frontend + server
+- "build": builds both
+- "start": node server dist
+
+Please generate:
+- All React components and pages
+- Express server with routes above
+- Supabase query helpers
+- Minimal CSS/ Tailwind classes
+- Types for People, Starship, Planet
+- Example seed insert for crews tables
+- README with setup instructions (env vars and how to run)
