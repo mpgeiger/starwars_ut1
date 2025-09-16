@@ -5,12 +5,29 @@ import { createClient } from '@supabase/supabase-js'
 import { parseNumeric } from './utils'
 import { calculateFeasibility } from './feasibility'
 
+// Check for required environment variables
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
+
+if (!supabaseUrl) {
+  console.error('❌ SUPABASE_URL environment variable is not set')
+  console.error('Please add SUPABASE_URL to your .env file')
+  process.exit(1)
+}
+
+if (!supabaseAnonKey) {
+  console.error('❌ SUPABASE_ANON_KEY environment variable is not set')
+  console.error('Please add SUPABASE_ANON_KEY to your .env file')
+  process.exit(1)
+}
+
+console.log('✅ Environment variables loaded successfully')
+console.log(`📡 Connecting to Supabase at: ${supabaseUrl}`)
+
 const app = express()
 const PORT = process.env.PORT || 3001
 
 // Supabase client
-const supabaseUrl = process.env.SUPABASE_URL!
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 app.use(cors())
