@@ -16,7 +16,8 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "allowImportingTsExtensions": true,
-    "noEmit": true
+    "declaration": true,
+    "declarationMap": true
   },
   "include": ["server/**/*"],
   "exclude": ["node_modules", "dist", "src"]
