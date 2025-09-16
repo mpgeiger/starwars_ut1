@@ -4,7 +4,7 @@ You are Bolt.new. Create a full-stack TypeScript app called "StarCrew".
 - Frontend: React + Vite + TypeScript + Tailwind + shadcn/ui (Button, Card, Dialog, Tabs, Badge, Table)
 - State: Zustand
 - Backend: Node/Express in the same Bolt project
-- DB: Supabase (use env vars SUPABASE_URL, SUPABASE_ANON_KEY)
+- DB: Supabase (use organization MPG, and Project StarWars, env vars SUPABASE_URL, SUPABASE_ANON_KEY)
 - Auth: none (public demo)
 - Lint: ESLint + Prettier
 
