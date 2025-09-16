@@ -60,6 +60,9 @@ app.get('/api/search/planets', async (req, res) => {
 
 // Search people/characters
 app.get('/api/search/people', async (req, res) => {
+  console.log('Testing people search query...')
+  console.log('Supabase URL:', supabaseUrl)
+  console.log('Using anon key:', supabaseAnonKey ? 'Yes' : 'No')
   try {
     const { q, film_id, species_id, homeworld_id, page = '1' } = req.query
     const limit = 20
