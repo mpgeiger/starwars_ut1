@@ -41,8 +41,13 @@ A full-stack TypeScript application for building and managing Star Wars crews fo
 Create a `.env` file in the root directory with:
 
 ```env
+# Frontend environment variables
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Backend environment variables  
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ### Installation
